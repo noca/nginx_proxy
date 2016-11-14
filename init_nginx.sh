@@ -12,7 +12,7 @@ wget -O nginx.tar.gz  -c http://nginx.org/download/nginx-1.10.2.tar.gz
 tar xvzf nginx.tar.gz
 
 cd nginx-1.10.2
-./configure --prefix=$idir --with-http_sub_module && make && make install
+./configure --prefix=$idir --with-http_sub_module --with-http_ssl_module && make && make install
 
 cd ..
 
