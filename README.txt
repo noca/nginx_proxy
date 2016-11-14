@@ -14,29 +14,65 @@
 
 将该文件拷贝到 nginx 的 enabled/ 目录下，重新加载 nginx，即可生效。
 
-我拿 stackoverflow.com 做了个例子，效果不错（我没替换 CDN，但隔离了 google 的
-一些域名）:
+cemarose.com 这个网站启用了 https，所以代理也需要有 https（如果没有 https 需要修改 php 代码，去除 cookie 的 secure 限制）。
+将新域名的 ssl 文件放在 ssl/ 目录下， 用目标域名命名 ssl 文件。
 
-# ./new_proxy.sh  stackoverflow.com local.stackoverflow.com '' 'ajax.googleapis.com;www.google-analytics.com'
-# cat stackoverflow.com.conf
+拿 cemarose.com 做例子：
+shawn@EryueStudio:~/work/nginx_proxy$ ./new_proxy.sh "www.cemarose.com" "cs.erpboost.com" "" "google.com;facebook.com"
+shawn@EryueStudio:~/work/nginx_proxy$ cat www.cemarose.com.conf 
+
 server {
     listen 80;
-    server_name local.stackoverflow.com;
+    server_name cs.erpboost.com;
 
     location / {
-        proxy_pass http://stackoverflow.com;
-        proxy_set_header Host "stackoverflow.com";
+        proxy_pass http://www.cemarose.com;
+        proxy_set_header Host "www.cemarose.com";
         proxy_set_header X-Real-IP $remote_addr;
         # 为替换，需禁用后端的压缩
         proxy_set_header Accept-Encoding  "";
+        # 替换跳转
+        proxy_redirect default;
+        proxy_redirect https://www.cemarose.com https://cs.erpboost.com;
         
         sub_filter_once off;
         # 替换逻辑
 
 
         # 禁用逻辑，只是把相关字串去掉，不能删除整行
-	sub_filter '//ajax.googleapis.com' '//';
-	sub_filter '//www.google-analytics.com' '//';
+    sub_filter '//google.com' '//';
+    sub_filter '//facebook.com' '//';
+    }
+}
+
+
+server {
+    listen 443;
+    server_name cs.erpboost.com;
+
+    ssl on;
+    ssl_certificate     ssl/cs.erpboost.com.crt;
+    ssl_certificate_key ssl/cs.erpboost.com.key;
+
+    location / {
+        proxy_pass https://www.cemarose.com;
+        proxy_set_header Host "www.cemarose.com";
+        proxy_set_header X-Real-IP $remote_addr;
+        # 为替换，需禁用后端的压缩
+        proxy_set_header Accept-Encoding  "";
+        # 替换跳转
+        proxy_redirect default;
+        proxy_redirect https://www.cemarose.com https://cs.erpboost.com;
+
+
+        sub_filter_once off;
+        # 替换逻辑
+        sub_filter 'www.cemarose.com' 'cs.erpboost.com';
+
+
+        # 禁用逻辑，只是把相关字串去掉，不能删除整行
+    sub_filter '//google.com' '//';
+    sub_filter '//facebook.com' '//';
     }
 }
 
