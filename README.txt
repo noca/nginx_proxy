@@ -1,10 +1,10 @@
 此替换功能使用了 Nginx 的 sub_filter_module 模块，用来替换返回的 html 中的相关
 信息。
 
-需要 Nginx 启用 http_sub_module 模块，启用方式见 init_nginx.sh 脚本。该脚本除
+需要 Nginx 启用 http_sub_module、http_ssl_module、和 http_lua_module 模块，启用方式见 init_nginx.sh 脚本。该脚本除
 启用模块外，还修改 nginx.conf 主文件，增加对 enabled/*.conf 的引用。
 
-生成代理配置的脚本为 new_proxy.sh，接收 4 个参数：
+生成代理配置的脚本为 new_proxy_http.sh（http 代理 https）、new_proxy_https.sh （https 代理 https)，接收 4 个参数：
 1. 要代理的源域名
 2. 代理启用的镜像域名
 3. 需要替换的文本内容的列表，用 : 组成对，用 ; 表示多组，用于替换 CDN 域名。
